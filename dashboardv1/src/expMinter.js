@@ -40,7 +40,6 @@ const Commons = moralis.Object.extend( "Commons", { /* Instance methods*/ },
                                         commons.set( "organizer",       document.getElementById( 'organizer0'       ).value  ); 
                                         commons.set( "vaultname",       document.getElementById( 'vaultname'       ).value  ); 
                                         commons.set( "confirmations",   document.getElementById( 'confirmations'   ).value  );
-                                        alert( 'tfer ' + document.getElementById( 'transferrable'   ).checked + '' );
                                         commons.set( "transferrable",   document.getElementById( 'transferrable'   ).checked + '' );
                                        
                                         var radios = document.getElementsByName( 'radio-group'   );                                 
@@ -160,8 +159,8 @@ const Commons = moralis.Object.extend( "Commons", { /* Instance methods*/ },
                                                             try 
                                                             {
                                                                 alert( 'account ' + account );
-                                                                const tx = await _contract.mint(price, coins, tokenURI, sale, account)
-                                                               
+//                                                                const tx = await _contract.mint(price, coins, tokenURI, sale, account)
+                                                                const tx = await _contract.mint( price, coins, tokenURI, sale, 100 )                                                             
                                                                 alert( 'post tx' );
 
                                                                  console.log('tx.hash for minting - ' + tx.hash)
