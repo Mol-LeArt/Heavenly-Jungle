@@ -17,7 +17,7 @@ import './App.css';
 import 'pivotal-ui/css/modal';
 import moralis from "moralis";
 import MOLCOMMONS_ABI from './MOLCOMMONS_ABI'
-
+import ImageGrid from './ImageGrid';
 import GAMMA_ABI from './GAMMA_ABI'
 
 
@@ -40,11 +40,13 @@ function App() {
         const [gamma, setGamma] = useState(null)
         const [commons, setCommons] = useState(null)
         const [gammaUris, setGammaUris] = useState([])
-        const [imageGrid, setImageGrid] = useState([])
+        const [gammaAddress, setGammaAddress] = useState(['not set!'])
+    
+    
 
         window.addEventListener( 'load', async function() { if (user) { await getNetwork(); setUser(user); setAddress(user.get("ethAddress") ); getCommons(); } }) ;
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
+       const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
 
 const getNetwork = () => {
     provider
@@ -87,15 +89,63 @@ const getNetwork = () => {
 
        const aboutus = () => {  window.location = '/about?commonsId=' +  window.location.search.substring( 11 ) };
 
-        const Organizer = moralis.Object.extend( "Organizer",{}, {} );
+        const Organizer = moralis.Object.extend( "Organizer", 
+        {
+          // Instance methods
 
-        const Avatar = moralis.Object.extend( "Avatar", {}, {} );
+        }, 
+        {  
+            newOrganizer: function(index) { 
+                                        const organizer = new Organizer();
+                                        alert( 'org ' + document.getElementById( 'organizer' + index ).value );
+                                        organizer.set( "address",        document.getElementById( 'organizer' + index ).value  );
+                                        return organizer; 
+                                    }
+        });
 
-        const Commons = moralis.Object.extend( "Commons", {}, {});
+        const Avatar = moralis.Object.extend( "Avatar", 
+        {
+          // Instance methods
+        }, 
+        {  
+            newAvatar: function(imageHash,address) { 
+                                        const avatar = new Avatar();
+                                        avatar.set( "image",        imageHash  );
+                                        avatar.set( "owneraddress",      address    );
+                                        return avatar; 
+                                    }
+        });
 
+        const Commons = moralis.Object.extend( "Commons", 
+        {
+          // Instance methods
 
-        
+        }, 
+        {  
+            newCommons: function() { 
+                                        const commons = new Commons();
+                                        commons.set( "name",            document.getElementById( 'commonsname'     ).value  );
+                                        commons.set( "vaultsymbol",     document.getElementById( 'vaultsymbol'     ).value  );
+                                        commons.set( "organizer",       document.getElementById( 'organizer0'       ).value  ); 
+                                        commons.set( "vaultname",       document.getElementById( 'vaultname'       ).value  ); 
+                                        commons.set( "confirmations",   document.getElementById( 'confirmations'   ).value  );
+                                        alert( 'tfer ' + document.getElementById( 'transferrable'   ).checked + '' );
+                                        commons.set( "transferrable",   document.getElementById( 'transferrable'   ).checked + '' );
+                                       
+                                        var radios = document.getElementsByName( 'radio-group'   );                                 
+                                        for (var i = 0; i < radios.length; i++) 
+                                        {
+                                            if ( radios[i].checked )
+                                            {
+                                               commons.set( "use",     radios[i].value  );
+                                       //        alert( 'elements ' + i + ' ' + radios[i].checked );
+                                            }
+                                        }
+                                        return commons; 
+                                    }
+        });
 
+        var commonsObject;
         const getCommons = async () =>
         {
             var commonsId =    window.location.search.substring( 11 );
@@ -103,15 +153,14 @@ const getNetwork = () => {
             const query = new moralis.Query( Commons );
             query.equalTo( "objectId", commonsId );
             const results = await query.find();
-            var commonsObject;
             if ( results.length > 0 ) // TODO 
             { 
-                const object = results[0];
-                const listItems = <li key={0}>{object.get('name') }</li>;
+                commonsObject = results[0];
+                
+                const listItems = <li key={0}>{commonsObject.get('name') }</li>;
                 setList(listItems);
-                setCommons( object.get('contractAddress')  );
-                setGamma( object.get('gammaAddress') )
-                await getGammaUri( object.get('gammaAddress')  )
+                setCommons( commonsObject.get('contractAddress')  );
+                setGammaAddress( commonsObject.get('gammaAddress') );
             }
             else
             {
@@ -129,7 +178,7 @@ const getNetwork = () => {
             { 
                 const object = orgResults[j];
                 await object.fetch();
-
+              //  alert( 'org' + object.get( 'address' ) );
 
                 const queryAvatar = new moralis.Query( Avatar );
                 queryAvatar.equalTo( "owneraddress", object.get( 'address' ) );
@@ -151,47 +200,29 @@ const getNetwork = () => {
                 orglistItems.push( org );          
             }
 
-            const orgsDisplay = orglistItems.map((organizer,index) => <TooltipTrigger key={index} tooltip={organizer.address}>&nbsp;<img src={organizer.url}  className="avatarimage" />&nbsp;</TooltipTrigger> );
+            const orgsDisplay = orglistItems.map((organizer,index) => <TooltipTrigger tooltip={organizer.address}>&nbsp;<img src={organizer.url}  className="avatarimage" />&nbsp;</TooltipTrigger> );
             setOrgList(orgsDisplay);
         }
 
-           // ----- Get Gamma tokens
-              const getGammaUri = async (gamma) => {
-                
-                const uris = []
-                const hashes = []
-               
-                const _contract = new ethers.Contract(gamma, GAMMA_ABI, signer)
-                try 
-                {
-
-                        var supply = await _contract.totalSupply();
-                        for (var i = 1; i <= supply.toNumber(); i++) 
-                        {
-                            var uri = await _contract.tokenURI(i)
-                            uris.push(uri)
-                            hashes.push( uri.substring( 21 ) );
-                        }
-                            
-                        setGammaUris(uris)
-
-                   
-                //https://ipfs.io/ipfs/QmbZbL7RMxowUzFm8tPxxi6FuYkAuWiAj1eP1Bwsw1haRM
-//                        const fileHash =    window.location.search.substring( 11 )                         
-            
-                        const rows = uris.map((uri,index) => <li className="item" key={index}><TooltipTrigger  key={index} tooltip={uri}><a href={'/nftview?hash=' + hashes[index]}><img className="itemImage" src={uri} /></a></TooltipTrigger></li>  );
+        const save = async () => { 
 
 
-
-                   setImageGrid(rows);
-                  
-                }
-                catch (e) 
-                {
-                  console.log(e)
-                }
-              }
-
+            var commonsId =    window.location.search.substring( 11 );
+          //  alert( commonsId );
+            const query = new moralis.Query( Commons );
+            query.equalTo( "objectId", commonsId );
+            const results = await query.find();
+            if ( results.length > 0 ) // TODO 
+            { 
+                commonsObject = results[0];
+                commonsObject.set( "gammaAddress", document.getElementById( 'gammaAddress' ).value );
+                await commonsObject.save();
+            }
+            else
+            {
+                alert( 'Commons not found!' );  //TODO handle this properly
+            }
+ }
 
 
 
@@ -201,26 +232,42 @@ const getNetwork = () => {
                         <Grid className="grid-show ">
                           <FlexCol fixed {...{style: {width: '35%'}}}/>
                           <FlexCol {...{style: {padding: '8px'}}} ><h1>{clist}</h1></FlexCol>
-                          <FlexCol />
+                          <FlexCol className="col-grow-2"/>
                         </Grid>
 
                         <Grid className="grid-show ">
                           <FlexCol fixed {...{style: {width: '35%'}}}/>
                           <FlexCol {...{style: {padding: '8px'}}} >Organizers {orgList}</FlexCol>
-                          <FlexCol/>
+                          <FlexCol className="col-grow-2"/>
                         </Grid>
                         <Grid className="grid-show ">
                           <FlexCol fixed {...{style: {width: '35%'}}}/>
                           <FlexCol {...{style: {padding: '8px'}}} ><PrimaryButton href={'/mint?commonsId=' + window.location.search.substring( 11 )} >Mint</PrimaryButton></FlexCol>
-                          <FlexCol />
+                          <FlexCol className="col-grow-2"/>
                         </Grid>
-                        <Grid className="grid-show ">
-                          <FlexCol fixed {...{style: {width: '5%'}}}/>
-                          <FlexCol {...{style: {padding: '8px'}}} ><ul>
-                         {imageGrid}</ul></FlexCol>
-                          <FlexCol fixed {...{style: {width: '5%'}}} />
-                        </Grid>
-                        
+
+
+
+
+
+                                    <Grid className="grid-show ">
+                                            <FlexCol className="box-shadow-amb-3" {...{  style: {height: '250px',  background: '#f8f8f8', margin: '8px 8px', padding: '8px'}}}>
+                                                <div className="bg-light-gray pal" >
+                                                    
+                                                </div>
+                                            </FlexCol>
+                                            <FlexCol className="box-shadow-amb-3" {...{  style: {height: '250px',  background: '#f8f8f8', margin: '8px 8px', padding: '8px'}}}>
+                                                <div className="bg-light-gray pal" >
+                                                    <Input placeholder={gammaAddress} id="gammaAddress" type="text"/><br/><br/>
+                                                    {gammaAddress}<br/><br/><PrimaryButton onClick={save} >Save</PrimaryButton>
+                                                </div>
+                                            </FlexCol> 
+                                            <FlexCol className="box-shadow-amb-3" {...{  style: {height: '250px',  background: '#f8f8f8', margin: '8px 8px', padding: '8px'}}}>
+                                                <div className="bg-light-gray pal" >
+                                                    
+                                                </div>
+                                            </FlexCol>  
+                                        </Grid>
       
                        
 

@@ -26,16 +26,17 @@ const orgaddresses = [];
 function App() {
 
         const initialUser = moralis.User.current();
-        const [user, setUser] = useState(initialUser);
-        const [clist, setList] = useState('');
-        const [orgList, setOrgList] = useState('');
-        const [address, setAddress] = useState('Connect Wallet');
-        const [chain, setChain] = useState('');
-        const [connect, toggleConnect] = useState(false);
-        const [aboutHeader,     setAboutHeader] = useState('About Header');
-        const [aboutParagraph,  setAboutParagraph] = useState('About Paragraph');
+        const [user,        setUser]        = useState(initialUser);
+        const [address,     setAddress]     = useState('Connect Wallet');
+        const [chain,       setChain]       = useState('');
+        const [connect,     toggleConnect]  = useState(false);
 
-        window.addEventListener( 'load', async function() { if (user) { await getNetwork(); setUser(user); setAddress(user.get("ethAddress") ); getCommons(); } }) ;
+        const [image,       setImage]       = useState('');
+        const [createdAt,   setCreatedAt]   = useState('');
+        const [title,       setTitle]       = useState('Title');
+        const [description, setDescription] = useState('Description');
+
+        window.addEventListener( 'load', async function() { if (user) { await getNetwork(); setUser(user); setAddress(user.get("ethAddress") ); getImage(); } }) ;
        const provider = new ethers.providers.Web3Provider(window.ethereum);
 
 
@@ -80,84 +81,39 @@ const getNetwork = () => {
 
        const aboutus = () => {  window.location = '/about?commonsId=' +  window.location.search.substring( 11 ) };
 
-        const saveContent = async () => {    var commonsId =    window.location.search.substring( 11 );
-                                            const query = new moralis.Query( Commons );
-                                            query.equalTo( "objectId", commonsId );
-                                            const results = await query.find();
-                                            var commonsObject;
-                                            for ( let i = 0; i < results.length; i++ ) 
-                                            { 
-                                                const object = await results[i].fetch();
-                                                if ( document.getElementById( 'about-header' ).value != '' )
-                                                {
-                                                    object.set( "header",       document.getElementById( 'about-header' ).value );
-                                                }
-                                                if ( document.getElementById( 'about-paragraph' ).value != '' )
-                                                {
-                                                    object.set( "paragraph",    document.getElementById( 'about-paragraph' ).value );
-                                                }
-                                                var resp =  await object.save();
-                                alert( resp );
-                                            } 
-                                };
+        const Organizer = moralis.Object.extend( "Organizer", {}, {} );
 
+        const Avatar = moralis.Object.extend( "Avatar",  {}, {} );
 
+        const Commons = moralis.Object.extend( "Commons", {}, {} );
 
-        const Organizer = moralis.Object.extend( "Organizer", 
+        const NFT = moralis.Object.extend( "NFT", {}, {});
+        
+        const getImage = async () =>
         {
-          // Instance methods
-
-        }, 
-        {  
-            newOrganizer: function(index) { 
-                                        const organizer = new Organizer();
-                                        alert( 'org ' + document.getElementById( 'organizer' + index ).value );
-                                        organizer.set( "address",        document.getElementById( 'organizer' + index ).value  );
-                                        return organizer; 
-                                    }
-        });
-
-        const Avatar = moralis.Object.extend( "Avatar", 
-        {
-          // Instance methods
-        }, 
-        {  
-            newAvatar: function(imageHash,address) { 
-                                        const avatar = new Avatar();
-                                        avatar.set( "image",        imageHash  );
-                                        avatar.set( "owneraddress",      address    );
-                                        return avatar; 
-                                    }
-        });
-
-        const Commons = moralis.Object.extend( "Commons", 
-        {
-          // Instance methods
-
-        }, 
-        {  
-            newCommons: function() { 
-                                        const commons = new Commons();
-                                        commons.set( "name",            document.getElementById( 'commonsname'     ).value  );
-                                        commons.set( "vaultsymbol",     document.getElementById( 'vaultsymbol'     ).value  );
-                                        commons.set( "organizer",       document.getElementById( 'organizer0'       ).value  ); 
-                                        commons.set( "vaultname",       document.getElementById( 'vaultname'       ).value  ); 
-                                        commons.set( "confirmations",   document.getElementById( 'confirmations'   ).value  );
-                                        alert( 'tfer ' + document.getElementById( 'transferrable'   ).checked + '' );
-                                        commons.set( "transferrable",   document.getElementById( 'transferrable'   ).checked + '' );
-                                       
-                                        var radios = document.getElementsByName( 'radio-group'   );                                 
-                                        for (var i = 0; i < radios.length; i++) 
-                                        {
-                                            if ( radios[i].checked )
-                                            {
-                                               commons.set( "use",     radios[i].value  );
-                                       //        alert( 'elements ' + i + ' ' + radios[i].checked );
-                                            }
-                                        }
-                                        return commons; 
-                                    }
-        });
+            //nftview?hash=QmbZbL7RMxowUzFm8tPxxi6FuYkAuWiAj1eP1Bwsw1haRM
+            var imageHash =    window.location.search.substring( 6 );
+            //alert( 'hash ' + imageHash + '\n' + window.location.search );
+            const query = new moralis.Query( NFT );
+            query.equalTo( "fileHash", imageHash );
+            const results = await query.find();
+            
+            if ( results.length > 0 )
+            {
+                let image = results[0];
+                //alert( image.get( "metadata" ) );
+                let metadata = image.get( "metadata" );
+                var date = new Date( metadata.createdAt );
+                setCreatedAt( date.toString() );
+                setImage( metadata.image );
+                setTitle( image.get( "title" ) );
+                setDescription( image.get( "description" ) );
+            }
+            else
+            {   
+                //TODO What?
+            }
+        }
 
         const getCommons = async () =>
         {
@@ -172,9 +128,8 @@ const getNetwork = () => {
                 const object = results[i];
                 commonsObject = object;
                 const listItems = <h1>{object.get('name') + ' - ' + object.get('vaultname')}</h1>;
-                setList(listItems);
-                setAboutHeader(object.get('header'));
-                setAboutParagraph( object.get('paragraph'));
+            //    setList(listItems);
+
             }
             const queryOrgs = new moralis.Query( Organizer );
             queryOrgs.equalTo( "parentId", commonsId );
@@ -200,32 +155,22 @@ const getNetwork = () => {
                 orglistItems.push( org );          
             }
             const orgsDisplay = orglistItems.map((organizer,index) => <TooltipTrigger tooltip={organizer.address}>&nbsp;<img src={organizer.url}  className="avatarimage" />&nbsp;</TooltipTrigger> );
-            setOrgList(orgsDisplay);
+           // setOrgList(orgsDisplay);
         }
 
-        return (
+      
+
+
+
+      return (
                     <div className="App" >
                         <Panel {...{title: 'Overview', titleCols: [<FlexCol fixed><BrandButton href="/" >Home</BrandButton><BrandButton onClick={aboutus} >About Us</BrandButton><PrimaryButton onClick={onLogin} >{address + ' - ' + chain}</PrimaryButton></FlexCol>], style: {  padding: '8px', background: '#f2f2f2'}}}>
                         <Grid className="grid-show ">
-                                            <FlexCol className="box-shadow-amb-3" {...{  style: {height: '250px',  background: '#f8f8f8', margin: '8px 8px', padding: '8px'}}}>
-                                                <div className="bg-light-gray pal" >
-                                                    
-                                                </div>
-                                            </FlexCol>
-                                            <FlexCol className="box-shadow-amb-3" {...{  style: {height: '250px',  background: '#f8f8f8', margin: '8px 8px', padding: '8px'}}}>
-                                                <div className="bg-light-gray pal" >
-                                                    <Image href="/nftview?panel=5" className="box-shadow-3 txt-c" src="/panelsSmall/5.jpg" alt="Iweng"/>
-                                                </div>
-                                            </FlexCol> 
-                                            <FlexCol className="box-shadow-amb-3" {...{  style: {height: '250px',  background: '#f8f8f8', margin: '8px 8px', padding: '8px'}}}>
-                                                <div className="bg-light-gray pal" >
-                                                    
-                                                </div>
-                                            </FlexCol>  
-                                        </Grid>
+                            <FlexCol fixed {...{style: {width: '5%'}}}/>
+                            <FlexCol {...{style: {padding: '8px'}}} ><img src={image} /><br/><br/>{title}<br/><br/>{description}<br/><br/>{createdAt}</FlexCol>
+                          <FlexCol fixed {...{style: {width: '5%'}}} />
+                        </Grid>
 
-
-  
                       </Panel>
                     </div>
                );

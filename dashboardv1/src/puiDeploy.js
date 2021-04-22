@@ -11,6 +11,7 @@ import {Checkbox} from 'pivotal-ui/react/checkbox';
 import {Radio, RadioGroup} from 'pivotal-ui/react/radio';
 import { ContractFactory, ethers } from 'ethers'
 
+import web3 from 'web3';
 
 import logo from './logo.svg';
 import './App.css';
@@ -36,7 +37,7 @@ function App() {
         const [address, setAddress] = useState('Connect Wallet');
         const [chain, setChain] = useState('');
         const [connect, toggleConnect] = useState(false);
-        //const [organizer, setOrganizer] = useState('')
+        const [organizer0, setOrganizer0] = useState('')
         const [confirmationsRequired, setConfirmationsRequired] = useState('')
         const [tokenName, setTokenName] = useState('')
         const [tokenSymbol, setTokenSymbol] = useState('')
@@ -79,7 +80,7 @@ function App() {
 
         }, 
         {  
-            newCommons: function(contractAddress) { 
+            newCommons: function(contractAddress,gammaAddress) { 
                                         const commons = new Commons();
                                         commons.set( "name",            document.getElementById( 'commonsname'     ).value  );
                                         commons.set( "vaultsymbol",     document.getElementById( 'vaultsymbol'     ).value  );//tokenSymbol
@@ -87,8 +88,10 @@ function App() {
                                         commons.set( "vaultname",       document.getElementById( 'vaultname'       ).value  ); //tokenName
                                         commons.set( "confirmations",   document.getElementById( 'confirmations'   ).value  );
                                         commons.set( "contractAddress", contractAddress  );
-                                            alert( 'commons address ' + contractAddress );
+                                            
                                         commons.set( "transferrable",   document.getElementById( 'transferrable'   ).checked + '' );
+
+                                        commons.set( "gammaAddress",    gammaAddress );
                                        
                                         var radios = document.getElementsByName( 'radio-group'   );                                 
                                         for (var i = 0; i < radios.length; i++) 
@@ -154,10 +157,21 @@ const getNetwork = () => {
 
        const onLogout = () => {  moralis.User.logOut(); setUser(null); };
 
-       const deployCommons = async () => { await deploy(); };
 
-       const saveCommons = async (contractAddress) => {                                                  
-                                              const newCommons = Commons.newCommons(contractAddress);
+
+       const saveCommons = async (contractAddress) => {   alert( 'contract ' + contractAddress );
+
+                                                        const _contract = new ethers.Contract(contractAddress, MOLCOMMONS_ABI, signer)
+                                                        var gammaAddress;
+                                                        try
+                                                        {
+                                                            gammaAddress = await _contract.gamma();
+                                                            console.log(gammaAddress)
+                                                            alert( 'gamma ' + gammaAddress );
+                                                                                                  
+                                                       } catch (e) { console.log(e) }
+                                               
+                                              const newCommons = Commons.newCommons(contractAddress,gammaAddress);
                                               await newCommons.save();  
                                               for ( var i = 0; i < 10; i++ )
                                               {
@@ -170,8 +184,11 @@ const getNetwork = () => {
                                                       await newCommons.save( {child: newOrganizer}  );
                                                   }
                                               }
+                                             window.location.href = "/";
                                                
                                        };
+
+
 
 const [orgs, setOrgs] = useState([]);
         const [orgRows, setOrgRows] = useState();
@@ -196,6 +213,20 @@ const [orgs, setOrgs] = useState([]);
     const setTransferableField = (checked) =>
     {
         setTransferable(checked);
+    }
+
+    const checkDeployable = () =>
+    {
+        if ( community != '' && communitySymbol != '' && web3.utils.isAddress(organizer0)  && tokenName != '' && tokenSymbol != '' && confirmationsRequired != '' && usecase )
+        {
+          //  alert( 'org ' +   web3.utils.isAddress(organizer0) );
+//            alert('deployable!');
+            deploy();
+        }
+        else
+        {
+            alert('Not deployable!');
+        }
     }
 
 
@@ -231,13 +262,13 @@ const [orgs, setOrgs] = useState([]);
           transferable
         )
 
-        _contract.deployTransaction
+       _contract.deployTransaction
           .wait()
           .then((receipt) => {
             saveCommons(receipt.contractAddress);
             alert( 'Receipt for deploying MolCommons ' + receipt.contractAddress )
             console.log('Receipt for deploying MolCommons', receipt)
-           
+            
           })
           .catch((e) => console.log(e))
       } catch (e) {
@@ -247,7 +278,6 @@ const [orgs, setOrgs] = useState([]);
       setDeployError('You must enter owners and number of confirmations')
     }
   }
-
         return (
                     <div className="App" >
                         <Panel {...{title: 'Overview', titleCols: [<FlexCol fixed><PrimaryButton onClick={onLogin} >{address + ' - ' + chain}</PrimaryButton></FlexCol>], style: {  padding: '8px', background: '#f2f2f2'}}}>
@@ -264,7 +294,7 @@ const [orgs, setOrgs] = useState([]);
 
                         <Grid className="grid-show show-outline">
                           <FlexCol fixed {...{style: {width: '35%'}}}/>
-                          <FlexCol {...{style: {padding: '8px'}}} ><Input placeholder="Organizer" id="organizer0" type="text"/></FlexCol>
+                          <FlexCol {...{style: {padding: '8px'}}} ><Input onChange={(e) => setOrganizer0(e.target.value)}  placeholder="Organizer" id="organizer0" type="text"/></FlexCol>
                           <FlexCol className="col-grow-2 txt-l"><DefaultButton onClick={addOrgs}>Add Another Organizer</DefaultButton></FlexCol>
                         </Grid>
 
@@ -304,7 +334,7 @@ const [orgs, setOrgs] = useState([]);
                         </Grid>
                         <Grid className="grid-show show-outline">
                           <FlexCol fixed {...{style: {width: '35%'}}}/>
-                          <FlexCol {...{style: {padding: '8px'}}} ><PrimaryButton onClick={deployCommons} >Deploy</PrimaryButton></FlexCol>
+                          <FlexCol {...{style: {padding: '8px'}}} ><PrimaryButton onClick={checkDeployable} >Deploy</PrimaryButton></FlexCol>
                           <FlexCol className="col-grow-2"/>
                         </Grid>
                       </Panel>

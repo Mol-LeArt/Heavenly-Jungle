@@ -43,6 +43,12 @@
     height: 50px;
 }
 
+.listImage
+{
+    border-radius: 5%;
+    height: 300px;
+}
+
 li
 {
     list-style: none;
@@ -61,4 +67,22 @@ li
 .commonsitem
 {
     padding:8px;
+}
+
+
+.item
+{
+    float: left;
+    max-width: 33%;
+    width: 33%;
+    border: 1px solid;
+    padding:8px;
+    text-align: center;
+    height: 100%;
+}
+
+.itemImage
+{
+    max-height: 400px;
+    max-width: 95%;
 }

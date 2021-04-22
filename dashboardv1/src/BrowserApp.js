@@ -3,13 +3,14 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom'
 import { TransitionGroup, Transition } from "react-transition-group";
 import { play, exit } from './timelines'
 
-import Deploy from "./puiDeploy-updated";
+import Deploy from "./puiDeploy";
 import Profile from "./puiUserProfile";
 import Select from "./puiSelectCommons";
 import ViewCommons from "./puiViewCommons";
 import AboutCommons from "./puiAboutCommons";
 import NFTView from "./puiNFTView";
-import Minter from "./expMinter";
+import Minter from "./puiMinter";
+import Edit from "./puiEditCommons";
 
 class App extends Component {
   render() {
@@ -37,6 +38,7 @@ class App extends Component {
                     <Route path="/about"    component={AboutCommons}    />
                     <Route path="/nftview"  component={NFTView}         />
                     <Route path="/mint"     component={Minter}          />
+                    <Route path="/edit"     component={Edit}          />
                 </Switch>
 
           )
