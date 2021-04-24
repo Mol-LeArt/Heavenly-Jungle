@@ -2,4 +2,4 @@
 Heavenly Jungle
 
 
-![alt text](https://ipfs.io/ipfs/QmbZbL7RMxowUzFm8tPxxi6FuYkAuWiAj1eP1Bwsw1haRM)
+![alt text](https://ipfs.io/ipfs/QmWSzEgmDTMA3QQhxuF8aMmFKKCq8cy6Yp846Swv9mFc3E)
