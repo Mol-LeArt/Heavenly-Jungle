@@ -21,6 +21,7 @@ class App extends Component {
 
 <Route render={({location}) => 
 {
+    
     const { pathname, key } = location
 
     //const query = new URLSearchParams(location.search);
@@ -32,13 +33,13 @@ class App extends Component {
 
                 <Switch location={location}>
                     <Route exact path="/"   component={Select}          />
-                    <Route path="/deploy"   component={Deploy}          />
-                    <Route path="/profile"  component={Profile}         />
-                    <Route path="/view"     component={ViewCommons}     />
-                    <Route path="/about"    component={AboutCommons}    />
-                    <Route path="/nftview"  component={NFTView}         />
-                    <Route path="/mint"     component={Minter}          />
-                    <Route path="/edit"     component={Edit}          />
+                    <Route path="deploy"   component={Deploy}          />
+                    <Route path="profile"  component={Profile}         />
+                    <Route path="view"     component={ViewCommons}     />
+                    <Route path="about"    component={AboutCommons}    />
+                    <Route path="nftview"  component={NFTView}         />
+                    <Route path="mint"     component={Minter}          />
+                    <Route path="edit"     component={Edit}          />
                 </Switch>
 
           )
