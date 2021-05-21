@@ -1,0 +1,59 @@
+import React, { Component } from 'react'
+import { BrowserRouter, Switch, Route } from 'react-router-dom'
+import { TransitionGroup, Transition } from "react-transition-group";
+import { play, exit } from './timelines'
+
+import Deploy from "./puiDeploy";
+import Profile from "./puiUserProfile";
+import Select from "./puiSelectCommons";
+import ViewCommons from "./puiViewCommons";
+
+class App extends Component {
+  render() {
+    return (
+      <BrowserRouter>
+        <div className="app">
+         
+
+<Route render={({location}) => 
+{
+    const { pathname, key } = location
+
+    //const query = new URLSearchParams(location.search);
+    
+   
+    return (
+
+        <TransitionGroup component={null}>
+              <Transition
+                key={key}
+                appear={true}
+                onEnter={(node, appears) => play(pathname, node, appears)}
+                timeout={{enter: 750, exit: 0}}
+              >
+
+                <Switch location={location}>
+                    <Route exact path="/" component={Select}/>
+                    <Route path="/deploy" component={Deploy}/>
+                    <Route path="/profile" component={Profile} />
+                    <Route path="/view" component={ViewCommons} />
+
+                </Switch>
+                </Transition>
+        </TransitionGroup>
+          )
+}} />
+
+        </div>
+      </BrowserRouter>
+    )
+  }
+
+
+}
+
+
+export default App;
+
+
+
