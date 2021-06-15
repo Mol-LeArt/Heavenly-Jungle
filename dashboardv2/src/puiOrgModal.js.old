@@ -1,0 +1,28 @@
+import React, { useState } from "react";
+import {DefaultButton, PrimaryButton, DangerButton, BrandButton} from 'pivotal-ui/react/buttons';
+import {Modal} from 'pivotal-ui/react/modal';
+import {Input} from 'pivotal-ui/react/inputs';
+
+function App() {
+
+   const [display, setDisplay] = useState(false);
+   const show = () => { setDisplay(true) }; 
+   const hide = () => { setDisplay(false) }; 
+   return (
+      <div>
+      <DefaultButton onClick={show}>
+                      Open Modal
+                    </DefaultButton>
+        <Modal animationDuration={false ? 0 : undefined}
+                title="Add Another Organizer!"
+                size="30%"
+                show={display}
+                onHide={hide}
+                footer={<DefaultButton onClick={hide}>Close</DefaultButton>}>
+                <Input autoFocus placeholder="Address"/>
+       </Modal>
+      </div>
+    );
+};
+
+export default App;

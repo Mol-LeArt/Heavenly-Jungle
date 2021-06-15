@@ -1,0 +1,56 @@
+import React, { Component } from 'react'
+import { HashRouter,BrowserRouter, Switch, Route } from 'react-router-dom'
+import { TransitionGroup, Transition } from "react-transition-group";
+import { play, exit } from './timelines'
+
+import Deploy from "./puiDeploy";
+import Profile from "./puiUserProfile";
+import Select from "./puiSelectCommons";
+import ViewCommons from "./puiViewCommons";
+import AboutCommons from "./puiAboutCommons";
+import NFTView from "./puiNFTView";
+import Minter from "./puiMinter";
+import Edit from "./puiEditCommons";
+
+class App extends Component {
+  render() {
+    return (
+      <HashRouter>
+        <div className="app">
+         
+
+<Route render={({location}) => 
+{
+    const { pathname, key } = location
+   
+    return (
+
+       
+
+                <Switch location={location}>
+                    <Route exact path="/"   component={Select}          />
+                    <Route path="/deploy"   component={Deploy}          />
+                    <Route path="/profile"  component={Profile}         />
+                    <Route path="/view"     component={ViewCommons}     />
+                    <Route path="/about"    component={AboutCommons}    />
+                    <Route path="/nftview"  component={NFTView}         />
+                    <Route path="/mint"     component={Minter}          />
+                    <Route path="/edit"     component={Edit}          />
+                </Switch>
+
+          )
+}} />
+
+        </div>
+      </HashRouter>
+    )
+  }
+
+
+}
+
+
+export default App;
+
+
+
